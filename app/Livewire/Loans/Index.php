@@ -53,14 +53,13 @@ class Index extends Component
         $this->validate();
         $book = Book::find($this->bookId);
 
-
-        //Cek Stok
-        if($book :: $book->stok < 1){
+        // Cek Stok
+        if(!$book || $book->stok < 1){
             session()->flash('error','Stok buku tidak tersedia!');
             return;
         }
 
-        //Buat Peminjaman
+        // Buat Peminjaman
         Loan::create([
             'user_id' => $this->userId,
             'book_id' => $this->bookId,
@@ -68,11 +67,12 @@ class Index extends Component
             'tanggal_kembali' => $this->tanggalKembali,
             'status' => 'dipinjam',
         ]);
-        //Kuarngi Stok
+        
+        // Kurangi Stok
         $book->decrement('stok');
 
         session()->flash('message','Peminjaman berhasil dicatat');
-        $this->showModal = false;
+        $this->closeModal();
     }
     public function closeModal()
     {

@@ -5,7 +5,6 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Books\Index as BooksIndex;
 use App\Livewire\Loans\Index as LoansIndex;
 use App\Livewire\Returns\Index as ReturnsIndex;
-use App\Livewire\User\Dashboard as UserDashboard;
 use Illuminate\Support\Facades\Route;
 
 // Halaman utama → langsung ke login
@@ -20,7 +19,7 @@ Route::get('/dashboard', function () {
         return app(AdminDashboard::class)();
     }
 
-    return app(UserDashboard::class)();
+    return app(\App\Livewire\UserDashboard::class)();
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Halaman-halaman yang butuh login
