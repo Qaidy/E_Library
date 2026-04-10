@@ -39,6 +39,7 @@ export default {
                 'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
                 'elevated': '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
                 'modal': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                'glow': '0 0 20px rgb(99 102 241 / 0.15)',
             },
             borderRadius: {
                 'xl': '0.75rem',
@@ -47,10 +48,14 @@ export default {
             fontSize: {
                 'xxs': ['0.65rem', { lineHeight: '1rem' }],
             },
+            spacing: {
+                '22': '5.5rem',
+            },
             animation: {
                 'fade-in': 'fadeIn 0.3s ease-out',
                 'slide-in': 'slideIn 0.3s ease-out',
                 'slide-up': 'slideUp 0.2s ease-out',
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
                 fadeIn: {

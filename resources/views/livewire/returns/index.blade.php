@@ -13,7 +13,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <input wire:model.live="search" type="text" placeholder="Cari nama peminjam atau judul buku..."
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama peminjam atau judul buku..."
                 class="input input-with-icon">
         </div>
     </div>
@@ -32,23 +32,36 @@
                 </thead>
                 <tbody>
                     @forelse($loans as $loan)
-                        <tr>
+                        <tr wire:key="return-{{ $loan->id }}">
                             <td>
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 bg-primary-50 rounded-full flex items-center justify-center flex-shrink-0">
                                         <span class="text-xs font-semibold text-primary-600">{{ strtoupper(substr($loan->user->name, 0, 1)) }}</span>
                                     </div>
-                                    <span class="font-medium text-slate-900">{{ $loan->user->name }}</span>
+                                    <div class="min-w-0">
+                                        <span class="font-medium text-slate-900 block truncate">{{ $loan->user->name }}</span>
+                                        <span class="text-xs text-slate-400">Dipinjam: {{ $loan->tanggal_pinjam->format('d M') }}</span>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="font-medium text-slate-700">{{ $loan->book->judul }}</td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="book-cover book-cover-sm rounded-md flex-shrink-0">
+                                        <img src="{{ $loan->book->cover_url ?? asset('images/book-placeholder.svg') }}"
+                                             alt="{{ $loan->book->judul ?? '' }}">
+                                    </div>
+                                    <span class="font-medium text-slate-700 truncate">{{ $loan->book->judul ?? 'Buku dihapus' }}</span>
+                                </div>
+                            </td>
                             <td>
                                 <div class="flex items-center gap-2">
                                     <span class="{{ $loan->isOverdue() ? 'text-red-600 font-semibold' : 'text-slate-600' }}">
                                         {{ $loan->tanggal_kembali->format('d M Y') }}
                                     </span>
                                     @if($loan->isOverdue())
-                                        <span class="badge badge-danger">Terlambat</span>
+                                        <span class="badge badge-danger text-[10px]">
+                                            {{ now()->diffInDays($loan->tanggal_kembali) }} hari
+                                        </span>
                                     @endif
                                 </div>
                             </td>
@@ -84,22 +97,33 @@
 
     {{-- Modal Konfirmasi --}}
     @if($showModal && $selectedLoan)
-        <div class="modal-backdrop">
-            <div class="modal max-w-sm">
+        <div class="modal-backdrop" x-data x-on:keydown.escape.window="$wire.closeModal()">
+            <div class="modal max-w-sm" @click.away="$wire.closeModal()">
                 <div class="p-6 text-center">
                     <div class="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                         </svg>
                     </div>
+
+                    {{-- Book Cover Preview in Modal --}}
+                    <div class="book-cover w-16 h-22 rounded-lg mx-auto mb-4">
+                        <img src="{{ $selectedLoan->book->cover_url ?? asset('images/book-placeholder.svg') }}"
+                             alt="{{ $selectedLoan->book->judul ?? '' }}">
+                    </div>
+
                     <h3 class="text-lg font-semibold text-slate-900 mb-2">Konfirmasi Pengembalian</h3>
                     <p class="text-sm text-slate-500 mb-1">Terima buku <strong class="text-slate-700">{{ $selectedLoan->book->judul }}</strong></p>
                     <p class="text-sm text-slate-500 mb-6">dari <strong class="text-slate-700">{{ $selectedLoan->user->name }}</strong>?</p>
                     <div class="flex items-center justify-center gap-3">
-                        <button wire:click="$set('showModal', false)" class="btn-secondary">Batal</button>
-                        <button wire:click="processReturn" class="btn-success">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button wire:click="closeModal" class="btn-secondary">Batal</button>
+                        <button wire:click="processReturn" class="btn-success" wire:loading.attr="disabled">
+                            <svg wire:loading.remove wire:target="processReturn" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <svg wire:loading wire:target="processReturn" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                             </svg>
                             Ya, Terima Buku
                         </button>

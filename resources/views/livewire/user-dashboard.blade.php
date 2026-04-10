@@ -1,21 +1,31 @@
-<div class="space-y-8 animate-slide-up">
+<div class="space-y-6 animate-slide-up">
     {{-- Flash Messages --}}
     @if (session()->has('success'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg p-4 -mb-4">
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+             x-transition:leave="transition ease-in duration-300"
+             class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg p-4 flex items-center gap-3">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
             {{ session('success') }}
         </div>
     @endif
     @if (session()->has('error'))
-        <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 -mb-4">
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+             x-transition:leave="transition ease-in duration-300"
+             class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 flex items-center gap-3">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
             {{ session('error') }}
         </div>
     @endif
 
     {{-- Welcome Banner --}}
-    <div class="bg-gradient-to-r from-primary-600 to-primary-500 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
-        {{-- Decorative --}}
+    <div class="bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-500 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
         <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
         <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+        <div class="absolute top-1/2 right-1/4 w-24 h-24 bg-white/5 rounded-full blur-lg"></div>
 
         <div class="relative z-10">
             <p class="text-primary-200 text-sm font-medium">{{ now()->translatedFormat('l, d F Y') }}</p>
@@ -24,100 +34,164 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Kolom Kiri: Buku Terbaru (2 Kolom di Desktop) --}}
-        <div class="lg:col-span-2 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold text-slate-900">Buku Terbaru</h3>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                @forelse($recentBooks as $book)
-                    <div wire:key="book-{{ $book->id }}" class="card p-4 flex gap-4 hover:border-primary-200 transition-colors group">
-                        <div class="w-20 h-28 bg-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-200 relative overflow-hidden">
-                            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {{-- Main Content: Book Catalog --}}
+        <div class="lg:col-span-3 space-y-5">
+            {{-- Search Bar --}}
+            <div class="card p-4">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        <div class="flex flex-col flex-1 min-w-0">
-                            <h4 class="font-semibold text-slate-900 truncate group-hover:text-primary-600 transition-colors" title="{{ $book->judul }}">
-                                {{ $book->judul }}
-                            </h4>
-                            <p class="text-sm text-slate-500 truncate mb-2">{{ $book->penulis }}</p>
-                            <div class="mt-auto flex flex-col gap-2">
-                                <div class="flex items-center justify-between">
-                                    <span class="badge {{ $book->stok > 0 ? 'badge-success' : 'badge-danger' }} text-xs">
-                                        {{ $book->stok > 0 ? 'Tersedia' : 'Habis' }}
-                                    </span>
-                                    @if($book->kategori)
-                                        <span class="text-xs text-slate-400">{{ $book->kategori }}</span>
-                                    @endif
-                                </div>
-                                <div class="flex justify-end mt-1">
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari judul atau penulis..."
+                            class="input input-with-icon" id="search-catalog">
+                    </div>
+                    <select wire:model.live="categoryFilter" class="select sm:w-48" id="filter-category-user">
+                        <option value="">Semua Kategori</option>
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }} ({{ $cat->books_count }})</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            {{-- Category Chips --}}
+            <div class="flex flex-wrap gap-2">
+                <button wire:click="$set('categoryFilter', '')"
+                        class="category-chip {{ $categoryFilter === '' ? 'active' : '' }}">
+                    Semua
+                </button>
+                @foreach($categories as $cat)
+                    @if($cat->books_count > 0)
+                    <button wire:click="$set('categoryFilter', '{{ $cat->id }}')"
+                            class="category-chip {{ $categoryFilter == $cat->id ? 'active' : '' }}">
+                        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $cat->color }}"></span>
+                        {{ $cat->name }}
+                    </button>
+                    @endif
+                @endforeach
+            </div>
+
+            {{-- Book Grid --}}
+            <div>
+                @if($books->isNotEmpty())
+                    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                        @foreach($books as $book)
+                            <div wire:key="catalog-{{ $book->id }}" class="book-card group">
+                                <a href="{{ route('books.show', $book) }}" class="block">
+                                    <div class="book-cover-wrapper">
+                                        <img src="{{ $book->cover_url }}" alt="{{ $book->judul }}">
+                                        <div class="book-overlay">
+                                            <span class="btn-sm bg-white/90 text-slate-900 rounded-lg font-medium text-xs px-3 py-1.5">
+                                                Lihat Detail
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="book-info">
+                                    <a href="{{ route('books.show', $book) }}" class="block">
+                                        <h4 class="font-semibold text-slate-900 text-sm truncate group-hover:text-primary-600 transition-colors" title="{{ $book->judul }}">
+                                            {{ $book->judul }}
+                                        </h4>
+                                        <p class="text-xs text-slate-500 truncate mt-0.5">{{ $book->penulis }}</p>
+                                    </a>
+                                    <div class="flex items-center justify-between mt-2.5">
+                                        @if($book->category)
+                                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                                  style="background-color: {{ $book->category->color }}15; color: {{ $book->category->color }}">
+                                                {{ $book->category->name }}
+                                            </span>
+                                        @else
+                                            <span></span>
+                                        @endif
+                                        <span class="text-[10px] font-medium {{ $book->stok > 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                            {{ $book->stok > 0 ? 'Tersedia' : 'Habis' }}
+                                        </span>
+                                    </div>
                                     @if($book->stok > 0)
-                                        <button wire:click="pinjamBuku({{ $book->id }})" wire:loading.attr="disabled" class="text-xs bg-primary-100 text-primary-700 hover:bg-primary-200 px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50">
-                                            <span wire:loading.remove wire:target="pinjamBuku({{ $book->id }})">Pinjam</span>
-                                            <span wire:loading wire:target="pinjamBuku({{ $book->id }})">Memproses...</span>
+                                        <button wire:click="pinjamBuku({{ $book->id }})" wire:loading.attr="disabled"
+                                                class="w-full mt-3 text-xs bg-primary-50 text-primary-700 hover:bg-primary-100 px-3 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5">
+                                            <span wire:loading.remove wire:target="pinjamBuku({{ $book->id }})">Pinjam Sekarang</span>
+                                            <span wire:loading wire:target="pinjamBuku({{ $book->id }})">
+                                                <svg class="w-4 h-4 animate-spin inline" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                                </svg>
+                                            </span>
                                         </button>
                                     @endif
                                 </div>
                             </div>
+                        @endforeach
+                    </div>
+
+                    @if($books->hasPages())
+                        <div class="mt-6">{{ $books->links() }}</div>
+                    @endif
+                @else
+                    <div class="card">
+                        <div class="empty-state py-12">
+                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <p class="empty-state-title">Tidak ada buku ditemukan</p>
+                            <p class="empty-state-text">Coba ubah kata kunci pencarian atau filter kategori.</p>
                         </div>
                     </div>
-                @empty
-                    <div class="col-span-full empty-state py-8">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                        <p class="empty-state-title">Belum ada buku</p>
-                    </div>
-                @endforelse
+                @endif
             </div>
         </div>
 
-        {{-- Kolom Kanan: Peminjaman Aktif --}}
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold text-slate-900">Sedang Dipinjam</h3>
-            
-            <div class="card p-0 overflow-hidden divide-y divide-slate-100">
+        {{-- Sidebar: Active Loans --}}
+        <div class="space-y-5">
+            <div class="card p-5 sticky top-20">
+                <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Pinjaman Aktif
+                    @if($myLoans->isNotEmpty())
+                        <span class="badge badge-warning text-[10px] px-1.5 py-0">{{ $myLoans->count() }}</span>
+                    @endif
+                </h3>
+
                 @forelse($myLoans as $loan)
-                    <div wire:key="loan-{{ $loan->id }}" class="p-4 flex flex-col gap-3">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="font-medium text-slate-900 truncate" title="{{ $loan->book->judul ?? 'Buku Dihapus' }}">
-                                    {{ $loan->book->judul ?? 'Buku tidak ditemukan' }}
-                                </p>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-xs {{ $loan->isOverdue() ? 'text-red-600 font-semibold' : 'text-slate-500' }}">
-                                        Kembali: {{ \Carbon\Carbon::parse($loan->tanggal_kembali)->format('d M') }}
-                                    </span>
-                                    @if($loan->isOverdue())
-                                        <span class="badge badge-danger text-[10px] px-1.5 py-0">Terlambat</span>
-                                    @endif
-                                </div>
-                            </div>
+                    <div wire:key="loan-{{ $loan->id }}" class="flex items-start gap-3 py-3 {{ !$loop->last ? 'border-b border-slate-100' : '' }}">
+                        <div class="book-cover book-cover-sm rounded-md flex-shrink-0">
+                            <img src="{{ $loan->book->cover_url ?? asset('images/book-placeholder.svg') }}"
+                                 alt="{{ $loan->book->judul ?? 'Buku' }}">
                         </div>
-                        <div class="flex justify-end">
-                            <button wire:click="kembalikanBuku({{ $loan->id }})" wire:loading.attr="disabled" class="text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-slate-900 text-sm truncate" title="{{ $loan->book->judul ?? 'Buku Dihapus' }}">
+                                {{ $loan->book->judul ?? 'Buku tidak ditemukan' }}
+                            </p>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="text-xs {{ $loan->isOverdue() ? 'text-red-600 font-semibold' : 'text-slate-500' }}">
+                                    {{ \Carbon\Carbon::parse($loan->tanggal_kembali)->format('d M Y') }}
+                                </span>
+                                @if($loan->isOverdue())
+                                    <span class="badge badge-danger text-[10px] px-1 py-0">!</span>
+                                @endif
+                            </div>
+                            <button wire:click="kembalikanBuku({{ $loan->id }})" wire:loading.attr="disabled"
+                                    class="mt-2 text-[11px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-md font-medium transition-colors disabled:opacity-50">
                                 <span wire:loading.remove wire:target="kembalikanBuku({{ $loan->id }})">Kembalikan</span>
-                                <span wire:loading wire:target="kembalikanBuku({{ $loan->id }})">Memproses...</span>
+                                <span wire:loading wire:target="kembalikanBuku({{ $loan->id }})">...</span>
                             </button>
                         </div>
                     </div>
                 @empty
-                    <div class="empty-state py-8">
-                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="text-center py-6">
+                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <p class="empty-state-title text-sm">Tidak ada pinjaman gantung</p>
-                        <p class="empty-state-text text-xs">Anda belum meminjam buku apa pun saat ini.</p>
+                        <p class="text-sm text-slate-500 font-medium">Tidak ada pinjaman</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Anda belum meminjam buku.</p>
                     </div>
                 @endforelse
             </div>

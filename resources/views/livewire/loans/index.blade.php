@@ -5,7 +5,7 @@
             <h1 class="page-title">Peminjaman</h1>
             <p class="page-subtitle">Kelola data peminjaman buku perpustakaan</p>
         </div>
-        <button wire:click="$set('showModal', true)" class="btn-primary">
+        <button wire:click="openModal" class="btn-primary" id="btn-add-loan">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -47,16 +47,35 @@
                 </thead>
                 <tbody>
                     @forelse($loans as $loan)
-                        <tr>
+                        <tr wire:key="loan-{{ $loan->id }}">
                             <td>
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 bg-primary-50 rounded-full flex items-center justify-center flex-shrink-0">
                                         <span class="text-xs font-semibold text-primary-600">{{ strtoupper(substr($loan->user->name, 0, 1)) }}</span>
                                     </div>
-                                    <span class="font-medium text-slate-900">{{ $loan->user->name }}</span>
+                                    <div class="min-w-0">
+                                        <span class="font-medium text-slate-900 block truncate">{{ $loan->user->name }}</span>
+                                        <span class="text-xs text-slate-400 truncate block">{{ $loan->user->email }}</span>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="font-medium text-slate-700">{{ $loan->book->judul }}</td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="book-cover book-cover-sm rounded-md flex-shrink-0">
+                                        <img src="{{ $loan->book->cover_url ?? asset('images/book-placeholder.svg') }}"
+                                             alt="{{ $loan->book->judul ?? '' }}">
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="font-medium text-slate-700 truncate">{{ $loan->book->judul ?? 'Buku dihapus' }}</p>
+                                        @if($loan->book && $loan->book->category)
+                                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full inline-block mt-0.5"
+                                                  style="background-color: {{ $loan->book->category->color }}15; color: {{ $loan->book->category->color }}">
+                                                {{ $loan->book->category->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
                             <td>
                                 <div class="space-y-0.5">
                                     <p class="text-xs text-slate-500">
@@ -68,9 +87,13 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="badge {{ $loan->status == 'dipinjam' ? 'badge-warning' : 'badge-success' }}">
-                                    {{ ucfirst($loan->status) }}
-                                </span>
+                                @if($loan->status == 'dipinjam' && $loan->tanggal_kembali < now())
+                                    <span class="badge badge-danger">Terlambat</span>
+                                @elseif($loan->status == 'dipinjam')
+                                    <span class="badge badge-warning">Dipinjam</span>
+                                @else
+                                    <span class="badge badge-success">Dikembalikan</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -96,8 +119,8 @@
 
     {{-- Modal Form --}}
     @if ($showModal)
-        <div class="modal-backdrop">
-            <div class="modal max-w-lg">
+        <div class="modal-backdrop" x-data x-on:keydown.escape.window="$wire.closeModal()">
+            <div class="modal max-w-lg" @click.away="$wire.closeModal()">
                 <div class="modal-header">
                     <h3 class="text-lg font-semibold text-slate-900">Catat Peminjaman</h3>
                     <p class="text-sm text-slate-500 mt-0.5">Isi detail peminjaman buku</p>
@@ -106,17 +129,17 @@
                 <form wire:submit.prevent="save">
                     <div class="modal-body space-y-5">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Peminjam</label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Peminjam <span class="text-red-500">*</span></label>
                             <select wire:model="userId" class="select">
                                 <option value="">Pilih Peminjam</option>
                                 @foreach ($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}">{{ $user->name }} — {{ $user->email }}</option>
                                 @endforeach
                             </select>
                             @error('userId') <span class="text-sm text-red-600 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Buku</label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Buku <span class="text-red-500">*</span></label>
                             <select wire:model="bookId" class="select">
                                 <option value="">Pilih Buku</option>
                                 @foreach ($books as $book)
@@ -141,9 +164,13 @@
 
                     <div class="modal-footer">
                         <button type="button" wire:click="closeModal" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                            <svg wire:loading.remove wire:target="save" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <svg wire:loading wire:target="save" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                             </svg>
                             Simpan
                         </button>

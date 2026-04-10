@@ -3,16 +3,33 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Book;
 use App\Models\Loan;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 
 class UserDashboard extends Component
 {
-    public function pinjamBuku($bookId)
+    use WithPagination;
+
+    public string $search = '';
+    public string $categoryFilter = '';
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function pinjamBuku(int $bookId): void
     {
         $book = Book::find($bookId);
-        
+
         if (!$book) {
             session()->flash('error', 'Buku tidak ditemukan.');
             return;
@@ -34,18 +51,18 @@ class UserDashboard extends Component
         }
 
         Loan::create([
-            'user_id' => Auth::id(),
-            'book_id' => $bookId,
-            'tanggal_pinjam' => now()->format('Y-m-d'),
+            'user_id'         => Auth::id(),
+            'book_id'         => $bookId,
+            'tanggal_pinjam'  => now()->format('Y-m-d'),
             'tanggal_kembali' => now()->addDays(7)->format('Y-m-d'),
-            'status' => 'dipinjam',
+            'status'          => 'dipinjam',
         ]);
 
         $book->decrement('stok');
-        session()->flash('success', 'Buku berhasil dipinjam.');
+        session()->flash('success', 'Buku berhasil dipinjam!');
     }
 
-    public function kembalikanBuku($loanId)
+    public function kembalikanBuku(int $loanId): void
     {
         $loan = Loan::where('id', $loanId)
             ->where('user_id', Auth::id())
@@ -58,27 +75,37 @@ class UserDashboard extends Component
         }
 
         $loan->update([
-            'status' => 'dikembalikan',
+            'status'                => 'dikembalikan',
+            'tanggal_dikembalikan'  => now(),
         ]);
 
         if ($loan->book) {
             $loan->book->increment('stok');
         }
 
-        session()->flash('success', 'Buku berhasil dikembalikan.');
+        session()->flash('success', 'Buku berhasil dikembalikan!');
     }
 
     public function render()
     {
-        $recentBooks = Book::latest()->take(4)->get();
+        $books = Book::with('category')
+            ->when($this->search, fn($q) => $q->where('judul', 'like', "%{$this->search}%")
+                ->orWhere('penulis', 'like', "%{$this->search}%"))
+            ->when($this->categoryFilter, fn($q) => $q->where('category_id', $this->categoryFilter))
+            ->orderBy('created_at', 'desc')
+            ->paginate(8);
+
+        $categories = Category::withCount('books')->orderBy('name')->get();
+
         $myLoans = Loan::with('book')
             ->where('user_id', Auth::id())
             ->where('status', 'dipinjam')
             ->get();
 
         return view('livewire.user-dashboard', [
-            'recentBooks' => $recentBooks,
-            'myLoans' => $myLoans,
+            'books'      => $books,
+            'categories' => $categories,
+            'myLoans'    => $myLoans,
         ])->layout('layouts.app');
     }
 }

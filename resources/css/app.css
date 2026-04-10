@@ -30,7 +30,9 @@
 }
 
 @layer components {
-    /* Card system */
+    /* ======================== */
+    /* Card System              */
+    /* ======================== */
     .card {
         @apply bg-white rounded-xl border border-slate-200/70 shadow-card transition-all duration-200;
     }
@@ -38,7 +40,53 @@
         @apply shadow-card-hover;
     }
 
-    /* Badge system */
+    /* ======================== */
+    /* Book Card                */
+    /* ======================== */
+    .book-card {
+        @apply card overflow-hidden cursor-pointer relative;
+    }
+    .book-card .book-cover-wrapper {
+        @apply relative overflow-hidden bg-slate-100;
+        aspect-ratio: 3 / 4;
+    }
+    .book-card .book-cover-wrapper img {
+        @apply w-full h-full object-cover transition-transform duration-500 ease-out;
+    }
+    .book-card:hover .book-cover-wrapper img {
+        @apply scale-110;
+    }
+    .book-card .book-overlay {
+        @apply absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent
+               opacity-0 group-hover:opacity-100 transition-all duration-300
+               flex items-end justify-center pb-6;
+    }
+    .book-card .book-info {
+        @apply p-4;
+    }
+
+    /* ======================== */
+    /* Book Cover Container     */
+    /* ======================== */
+    .book-cover {
+        @apply bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200/50;
+    }
+    .book-cover img {
+        @apply w-full h-full object-cover;
+    }
+    .book-cover-sm {
+        @apply w-10 h-14;
+    }
+    .book-cover-md {
+        @apply w-16 h-22;
+    }
+    .book-cover-lg {
+        @apply w-48 h-64 sm:w-56 sm:h-80;
+    }
+
+    /* ======================== */
+    /* Badge System             */
+    /* ======================== */
     .badge {
         @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
     }
@@ -55,7 +103,22 @@
         @apply bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-600/20;
     }
 
-    /* Button system */
+    /* ======================== */
+    /* Category Chip            */
+    /* ======================== */
+    .category-chip {
+        @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+               border border-slate-200 bg-white text-slate-600
+               hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50
+               transition-all duration-200 cursor-pointer select-none;
+    }
+    .category-chip.active {
+        @apply bg-primary-600 text-white border-primary-600 shadow-sm;
+    }
+
+    /* ======================== */
+    /* Button System            */
+    /* ======================== */
     .btn {
         @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
     }
@@ -81,7 +144,9 @@
         @apply px-6 py-3 text-base;
     }
 
-    /* Input system */
+    /* ======================== */
+    /* Input System             */
+    /* ======================== */
     .input {
         @apply w-full rounded-lg border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-colors duration-200;
     }
@@ -92,7 +157,25 @@
         @apply input appearance-none cursor-pointer pr-10;
     }
 
-    /* Table system */
+    /* ======================== */
+    /* File Upload Zone         */
+    /* ======================== */
+    .file-upload {
+        @apply relative flex flex-col items-center justify-center w-full p-6
+               border-2 border-dashed border-slate-300 rounded-xl
+               bg-slate-50 hover:bg-slate-100 hover:border-primary-400
+               transition-all duration-200 cursor-pointer;
+    }
+    .file-upload.has-file {
+        @apply border-primary-400 bg-primary-50/50;
+    }
+    .file-upload-preview {
+        @apply w-full rounded-lg overflow-hidden bg-white border border-slate-200;
+    }
+
+    /* ======================== */
+    /* Table System             */
+    /* ======================== */
     .table-container {
         @apply card overflow-hidden;
     }
@@ -112,7 +195,9 @@
         @apply border-b border-slate-100 last:border-0 transition-colors duration-150 hover:bg-slate-50/50;
     }
 
-    /* Modal system */
+    /* ======================== */
+    /* Modal System             */
+    /* ======================== */
     .modal-backdrop {
         @apply fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in;
     }
@@ -129,7 +214,9 @@
         @apply px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3;
     }
 
-    /* Stat card */
+    /* ======================== */
+    /* Stat Card                */
+    /* ======================== */
     .stat-card {
         @apply card p-6 relative overflow-hidden;
     }
@@ -138,7 +225,9 @@
         @apply absolute top-0 left-0 w-1 h-full;
     }
 
-    /* Sidebar nav item */
+    /* ======================== */
+    /* Sidebar Nav              */
+    /* ======================== */
     .nav-item {
         @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-sidebar-hover transition-all duration-200 cursor-pointer;
     }
@@ -146,7 +235,9 @@
         @apply text-white bg-primary-600/20 border-l-2 border-primary-400;
     }
 
-    /* Page header */
+    /* ======================== */
+    /* Page Header              */
+    /* ======================== */
     .page-header {
         @apply mb-8;
     }
@@ -157,7 +248,9 @@
         @apply text-sm text-slate-500 mt-1;
     }
 
-    /* Empty state */
+    /* ======================== */
+    /* Empty State              */
+    /* ======================== */
     .empty-state {
         @apply flex flex-col items-center justify-center py-12 text-center;
     }
@@ -170,10 +263,45 @@
     .empty-state-text {
         @apply text-sm text-slate-400;
     }
+
+    /* ======================== */
+    /* Skeleton Loading         */
+    /* ======================== */
+    .skeleton {
+        @apply bg-slate-200 rounded animate-pulse;
+    }
+    .skeleton-text {
+        @apply skeleton h-4 w-full;
+    }
+    .skeleton-text-sm {
+        @apply skeleton h-3 w-3/4;
+    }
+    .skeleton-cover {
+        @apply skeleton w-full;
+        aspect-ratio: 3 / 4;
+    }
+
+    /* ======================== */
+    /* View Toggle              */
+    /* ======================== */
+    .view-toggle {
+        @apply inline-flex rounded-lg border border-slate-200 overflow-hidden;
+    }
+    .view-toggle-btn {
+        @apply px-3 py-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors;
+    }
+    .view-toggle-btn.active {
+        @apply bg-primary-50 text-primary-600;
+    }
 }
 
 @layer utilities {
     .text-gradient {
         @apply bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent;
+    }
+
+    /* Height utilities for book covers */
+    .h-22 {
+        height: 5.5rem;
     }
 }

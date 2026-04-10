@@ -6,7 +6,7 @@
 >
     {{-- Logo --}}
     <div class="flex items-center gap-3 px-5 h-16 border-b border-white/10 flex-shrink-0">
-        <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+        <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
             </svg>
@@ -30,6 +30,8 @@
         </a>
 
         @if (auth()->user()->role === 'admin')
+            <p class="px-3 text-xxs font-semibold text-slate-500 uppercase tracking-widest mb-2 mt-6">Kelola</p>
+
             <a href="{{ route('books') }}"
                class="nav-item {{ request()->routeIs('books') ? 'active' : '' }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,12 +83,12 @@
     {{-- User Info at Bottom --}}
     <div class="p-4 border-t border-white/10 flex-shrink-0">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-primary-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-sm font-semibold text-primary-400">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
+            <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                <span class="text-sm font-semibold text-white">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
             </div>
             <div class="min-w-0">
                 <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
-                <p class="text-xxs text-slate-400 truncate">{{ Auth::user()->email }}</p>
+                <p class="text-xxs text-slate-400 truncate">{{ ucfirst(Auth::user()->role ?? 'user') }}</p>
             </div>
         </div>
     </div>

@@ -46,4 +46,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * A user can have many loans.
+     */
+    public function loans()
+    {
+        return $this->hasMany(\App\Models\Loan::class);
+    }
+
+    /**
+     * Check if the user has admin role.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 }
